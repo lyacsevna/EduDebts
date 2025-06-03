@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Учёт учебных задолженностей</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2980b9;
+            --accent-color: #e74c3c;
+            --light-color: #ecf0f1;
+            --dark-color: #2c3e50;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f7fa;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background-color: var(--dark-color);
+            color: white;
+            padding: 20px 0;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            text-align: center;
+            font-size: 2.2rem;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 20px;
+        }
+
+        .sidebar {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .sidebar-nav {
+            list-style: none;
+        }
+
+        .sidebar-nav li {
+            margin-bottom: 10px;
+        }
+
+        .sidebar-nav a {
+            display: block;
+            padding: 10px 15px;
+            color: var(--dark-color);
+            text-decoration: none;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-nav a:hover,
+        .sidebar-nav a.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .main-content {
+            background-color: white;
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: var(--dark-color);
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--light-color);
+        }
+
+        .action-bar {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+        }
+
+        .btn:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .btn-danger {
+            background-color: var(--accent-color);
+        }
+
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+
+        .btn-success {
+            background-color: var(--success-color);
+        }
+
+        .btn-success:hover {
+            background-color: #219653;
+        }
+
+        .btn-warning {
+            background-color: var(--warning-color);
+        }
+
+        .btn-warning:hover {
+            background-color: #e67e22;
+        }
+
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 0.9rem;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 25px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 1.3rem;
+            color: var(--dark-color);
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #777;
+        }
+
+        .modal-footer {
+            margin-top: 20px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: var(--light-color);
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background-color: #f9f9f9;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .badge-active {
+            background-color: #ffebee;
+            color: #c62828;
+        }
+
+        .badge-settled {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .stat-card h3 {
+            font-size: 1rem;
+            color: #777;
+            margin-bottom: 10px;
+        }
+
+        .stat-card p {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+
+        .stat-card.success p {
+            color: var(--success-color);
+        }
+
+        .stat-card.warning p {
+            color: var(--warning-color);
+        }
+
+        .stat-card.danger p {
+            color: var(--accent-color);
+        }
+
+        .filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                order: 2;
+            }
+
+            .main-content {
+                order: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Система учёта учебных задолженностей</h1>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="dashboard">
+            <aside class="sidebar">
+                <ul class="sidebar-nav">
+                    <li><a href="#" class="active" onclick="loadSection('dashboard')"><i class="fas fa-tachometer-alt"></i> Панель управления</a></li>
+                    <li><a href="#" onclick="loadSection('faculties')"><i class="fas fa-university"></i> Факультеты</a></li>
+                    <li><a href="#" onclick="loadSection('groups')"><i class="fas fa-users"></i> Группы</a></li>
+                    <li><a href="#" onclick="loadSection('subjects')"><i class="fas fa-book"></i> Предметы</a></li>
+                    <li><a href="#" onclick="loadSection('students')"><i class="fas fa-user-graduate"></i> Студенты</a></li>
+                    <li><a href="#" onclick="loadSection('debts')"><i class="fas fa-exclamation-circle"></i> Задолженности</a></li>
+                    <li><a href="#" onclick="loadSection('reports')"><i class="fas fa-chart-bar"></i> Отчёты</a></li>
+                </ul>
+            </aside>
+
+            <main class="main-content">
+                <!-- Dashboard Section -->
+                <section id="dashboard-section">
+                    <h2 class="section-title">Панель управления</h2>
+
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <h3>Всего факультетов</h3>
+                            <p id="faculties-count">0</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Всего групп</h3>
+                            <p id="groups-count">0</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Всего студентов</h3>
+                            <p id="students-count">0</p>
+                        </div>
+                        <div class="stat-card danger">
+                            <h3>Активные задолженности</h3>
+                            <p id="active-debts-count">0</p>
+                        </div>
+                    </div>
+
+                    <h3 class="section-title">Последние задолженности</h3>
+                    <div class="table-responsive">
+                        <table id="recent-debts-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Студент</th>
+                                    <th>Предмет</th>
+                                    <th>Дата</th>
+                                    <th>Статус</th>
+                                    <th>Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Faculties Section -->
+                <section id="faculties-section" style="display: none;">
+                    <div class="action-bar">
+                        <h2 class="section-title">Факультеты</h2>
+                        <button class="btn" onclick="showFacultyModal()">Добавить факультет</button>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table id="faculties-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Название</th>
+                                    <th>Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Groups Section -->
+                <section id="groups-section" style="display: none;">
+                    <div class="action-bar">
+                        <h2 class="section-title">Группы</h2>
+                        <button class="btn" onclick="showGroupModal()">Добавить группу</button>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table id="groups-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Название</th>
+                                    <th>Факультет</th>
+                                    <th>Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Subjects Section -->
+                <section id="subjects-section" style="display: none;">
+                    <div class="action-bar">
+                        <h2 class="section-title">Предметы</h2>
+                        <button class="btn" onclick="showSubjectModal()">Добавить предмет</button>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table id="subjects-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Название</th>
+                                    <th>Группа</th>
+                                    <th>Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Students Section -->
+                <section id="students-section" style="display: none;">
+                    <div class="action-bar">
+                        <h2 class="section-title">Студенты</h2>
+                        <button class="btn" onclick="showStudentModal()">Добавить студента</button>
+                    </div>
+
+                    <div class="filters">
+                        <div class="filter-group">
+                            <label for="student-group-filter">Группа:</label>
+                            <select id="student-group-filter" class="form-control" onchange="loadStudents()">
+                                <option value="">Все группы</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table id="students-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>ФИО</th>
+                                    <th>Номер зачётки</th>
+                                    <th>Группа</th>
+                                    <th>Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Debts Section -->
+                <section id="debts-section" style="display: none;">
+                    <div class="action-bar">
+                        <h2 class="section-title">Задолженности</h2>
+                        <button class="btn" onclick="showDebtModal()">Добавить задолженность</button>
+                    </div>
+
+                    <div class="filters">
+                        <div class="filter-group">
+                            <label for="debt-status-filter">Статус:</label>
+                            <select id="debt-status-filter" class="form-control" onchange="loadDebts()">
+                                <option value="all">Все</option>
+                                <option value="active">Активные</option>
+                                <option value="settled">Погашенные</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="debt-group-filter">Группа:</label>
+                            <select id="debt-group-filter" class="form-control" onchange="loadDebts()">
+                                <option value="">Все группы</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table id="debts-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Студент</th>
+                                    <th>Предмет</th>
+                                    <th>Причина</th>
+                                    <th>Дата</th>
+                                    <th>Статус</th>
+                                    <th>Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Reports Section -->
+                <section id="reports-section" style="display: none;">
+                    <h2 class="section-title">Отчёты</h2>
+
+                    <div class="filters">
+                        <div class="filter-group">
+                            <label for="report-type">Тип отчёта:</label>
+                            <select id="report-type" class="form-control" onchange="loadReport()">
+                                <option value="by_faculty">По факультетам</option>
+                                <option value="by_group">По группам</option>
+                            </select>
+                        </div>
+                        <div class="filter-group" id="group-select-container" style="display: none;">
+                            <label for="report-group">Группа:</label>
+                            <select id="report-group" class="form-control" onchange="loadGroupReport()">
+                                <option value="">Выберите группу</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="faculty-report">
+                        <h3 class="section-title">Задолженности по факультетам</h3>
+                        <div class="table-responsive">
+                            <table id="faculty-report-table">
+                                <thead>
+                                    <tr>
+                                        <th>Факультет</th>
+                                        <th>Кол-во задолженностей</th>
+                                        <th>Действия</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div id="group-report" style="display: none;">
+                        <h3 class="section-title">Задолженности по группе</h3>
+                        <div class="table-responsive">
+                            <table id="group-report-table">
+                                <thead>
+                                    <tr>
+                                        <th>Студент</th>
+                                        <th>Кол-во задолженностей</th>
+                                        <th>Действия</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div id="student-debts-report" style="display: none;">
+                        <h3 class="section-title">Задолженности студента</h3>
+                        <div class="table-responsive">
+                            <table id="student-debts-table">
+                                <thead>
+                                    <tr>
+                                        <th>Предмет</th>
+                                        <th>Причина</th>
+                                        <th>Дата</th>
+                                        <th>Статус</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <!-- Faculty Modal -->
+    <div id="faculty-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Добавить факультет</h3>
+                <button class="close-modal" onclick="closeModal('faculty-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="faculty-name">Название факультета:</label>
+                    <input type="text" id="faculty-name" class="form-control">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeModal('faculty-modal')">Отмена</button>
+                <button class="btn btn-success" onclick="saveFaculty()">Сохранить</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Group Modal -->
+    <div id="group-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Добавить группу</h3>
+                <button class="close-modal" onclick="closeModal('group-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="group-name">Название группы:</label>
+                    <input type="text" id="group-name" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="group-faculty">Факультет:</label>
+                    <select id="group-faculty" class="form-control"></select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeModal('group-modal')">Отмена</button>
+                <button class="btn btn-success" onclick="saveGroup()">Сохранить</button>
+            </div>
+        </div>
+    </div>
+
+</body>
