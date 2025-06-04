@@ -645,4 +645,1091 @@
         </div>
     </div>
 
+    <!-- Subject Modal -->
+    <div id="subject-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Добавить предмет</h3>
+                <button class="close-modal" onclick="closeModal('subject-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="subject-name">Название предмета:</label>
+                    <input type="text" id="subject-name" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="subject-group">Группа:</label>
+                    <select id="subject-group" class="form-control"></select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeModal('subject-modal')">Отмена</button>
+                <button class="btn btn-success" onclick="saveSubject()">Сохранить</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Student Modal -->
+    <div id="student-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Добавить студента</h3>
+                <button class="close-modal" onclick="closeModal('student-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="student-last-name">Фамилия:</label>
+                    <input type="text" id="student-last-name" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="student-first-name">Имя:</label>
+                    <input type="text" id="student-first-name" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="student-patronymic">Отчество:</label>
+                    <input type="text" id="student-patronymic" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="student-record-book">Номер зачётки:</label>
+                    <input type="text" id="student-record-book" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="student-group">Группа:</label>
+                    <select id="student-group" class="form-control" required></select>
+                </div>
+                <div class="form-group">
+                    <label for="student-phone">Телефон:</label>
+                    <input type="text" id="student-phone" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="student-email">Email:</label>
+                    <input type="email" id="student-email" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="student-dob">Дата рождения:</label>
+                    <input type="date" id="student-dob" class="form-control">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeModal('student-modal')">Отмена</button>
+                <button class="btn btn-success" onclick="saveStudent()">Сохранить</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Debt Modal -->
+    <div id="debt-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Добавить задолженность</h3>
+                <button class="close-modal" onclick="closeModal('debt-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="debt-student">Студент:</label>
+                    <select id="debt-student" class="form-control" required></select>
+                </div>
+                <div class="form-group">
+                    <label for="debt-subject">Предмет:</label>
+                    <select id="debt-subject" class="form-control" required></select>
+                </div>
+                <div class="form-group">
+                    <label for="debt-reason">Причина:</label>
+                    <input type="text" id="debt-reason" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="debt-date">Дата возникновения:</label>
+                    <input type="date" id="debt-date" class="form-control">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeModal('debt-modal')">Отмена</button>
+                <button class="btn btn-success" onclick="saveDebt()">Сохранить</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modals (similar structure for each entity) -->
+
+    <script>
+        const API_BASE_URL = 'http://127.0.0.1:8888';
+        let currentEditId = null;
+
+        // Load initial data
+        document.addEventListener('DOMContentLoaded', () => {
+            loadDashboard();
+            loadFacultiesForDropdowns();
+            loadGroupsForDropdowns();
+        });
+
+        // Section navigation
+        function loadSection(section) {
+            // Hide all sections
+            document.getElementById('dashboard-section').style.display = 'none';
+            document.getElementById('faculties-section').style.display = 'none';
+            document.getElementById('groups-section').style.display = 'none';
+            document.getElementById('subjects-section').style.display = 'none';
+            document.getElementById('students-section').style.display = 'none';
+            document.getElementById('debts-section').style.display = 'none';
+            document.getElementById('reports-section').style.display = 'none';
+
+            // Update active nav item
+            const navItems = document.querySelectorAll('.sidebar-nav a');
+            navItems.forEach(item => item.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+
+            // Show selected section
+            switch(section) {
+                case 'dashboard':
+                    document.getElementById('dashboard-section').style.display = 'block';
+                    loadDashboard();
+                    break;
+                case 'faculties':
+                    document.getElementById('faculties-section').style.display = 'block';
+                    loadFaculties();
+                    break;
+                case 'groups':
+                    document.getElementById('groups-section').style.display = 'block';
+                    loadGroups();
+                    break;
+                case 'subjects':
+                    document.getElementById('subjects-section').style.display = 'block';
+                    loadSubjects();
+                    break;
+                case 'students':
+                    document.getElementById('students-section').style.display = 'block';
+                    loadStudents();
+                    break;
+                case 'debts':
+                    document.getElementById('debts-section').style.display = 'block';
+                    loadDebts();
+                    break;
+                case 'reports':
+                    document.getElementById('reports-section').style.display = 'block';
+                    loadReport();
+                    break;
+            }
+        }
+
+        // Modal functions
+        function showFacultyModal(editId = null) {
+            currentEditId = editId;
+            const modal = document.getElementById('faculty-modal');
+
+            if (editId) {
+                document.querySelector('#faculty-modal .modal-title').textContent = 'Редактировать факультет';
+                fetch(`${API_BASE_URL}/faculties/${editId}`)
+                    .then(response => response.json())
+                    .then(faculty => {
+                        document.getElementById('faculty-name').value = faculty.name;
+                    });
+            } else {
+                document.querySelector('#faculty-modal .modal-title').textContent = 'Добавить факультет';
+                document.getElementById('faculty-name').value = '';
+            }
+
+            modal.style.display = 'flex';
+        }
+
+        function showGroupModal(editId = null) {
+            currentEditId = editId;
+            const modal = document.getElementById('group-modal');
+
+            if (editId) {
+                document.querySelector('#group-modal .modal-title').textContent = 'Редактировать группу';
+                fetch(`${API_BASE_URL}/groups/${editId}`)
+                    .then(response => response.json())
+                    .then(group => {
+                        document.getElementById('group-name').value = group.name;
+                        document.getElementById('group-faculty').value = group.faculty_id;
+                    });
+            } else {
+                document.querySelector('#group-modal .modal-title').textContent = 'Добавить группу';
+                document.getElementById('group-name').value = '';
+                document.getElementById('group-faculty').value = '';
+            }
+
+            modal.style.display = 'flex';
+        }
+
+        function showSubjectModal(editId = null) {
+            currentEditId = editId;
+            const modal = document.getElementById('subject-modal');
+
+            if (editId) {
+                document.querySelector('#subject-modal .modal-title').textContent = 'Редактировать предмет';
+                fetch(`${API_BASE_URL}/subjects/${editId}`)
+                    .then(response => response.json())
+                    .then(subject => {
+                        document.getElementById('subject-name').value = subject.name;
+                        document.getElementById('subject-group').value = subject.group_id;
+                    });
+            } else {
+                document.querySelector('#subject-modal .modal-title').textContent = 'Добавить предмет';
+                document.getElementById('subject-name').value = '';
+                document.getElementById('subject-group').value = '';
+            }
+
+            modal.style.display = 'flex';
+        }
+
+        function showStudentModal(editId = null) {
+            currentEditId = editId;
+            const modal = document.getElementById('student-modal');
+
+            if (editId) {
+                document.querySelector('#student-modal .modal-title').textContent = 'Редактировать студента';
+                fetch(`${API_BASE_URL}/students/${editId}`)
+                    .then(response => response.json())
+                    .then(student => {
+                        document.getElementById('student-last-name').value = student.last_name;
+                        document.getElementById('student-first-name').value = student.first_name;
+                        document.getElementById('student-patronymic').value = student.patronymic || '';
+                        document.getElementById('student-record-book').value = student.record_book_number;
+                        document.getElementById('student-group').value = student.group_id;
+                        document.getElementById('student-phone').value = student.phone || '';
+                        document.getElementById('student-email').value = student.email || '';
+                        document.getElementById('student-dob').value = student.date_of_birth || '';
+                    });
+            } else {
+                document.querySelector('#student-modal .modal-title').textContent = 'Добавить студента';
+                document.getElementById('student-last-name').value = '';
+                document.getElementById('student-first-name').value = '';
+                document.getElementById('student-patronymic').value = '';
+                document.getElementById('student-record-book').value = '';
+                document.getElementById('student-group').value = '';
+                document.getElementById('student-phone').value = '';
+                document.getElementById('student-email').value = '';
+                document.getElementById('student-dob').value = '';
+            }
+
+            modal.style.display = 'flex';
+        }
+
+        function showDebtModal(editId = null) {
+            currentEditId = editId;
+            const modal = document.getElementById('debt-modal');
+
+            if (editId) {
+                document.querySelector('#debt-modal .modal-title').textContent = 'Редактировать задолженность';
+                fetch(`${API_BASE_URL}/debts/${editId}`)
+                    .then(response => response.json())
+                    .then(debt => {
+                        document.getElementById('debt-student').value = debt.student_id;
+                        document.getElementById('debt-subject').value = debt.subject_id;
+                        document.getElementById('debt-reason').value = debt.reason || '';
+                        document.getElementById('debt-date').value = debt.date_occurred || '';
+                    });
+            } else {
+                document.querySelector('#debt-modal .modal-title').textContent = 'Добавить задолженность';
+                document.getElementById('debt-student').value = '';
+                document.getElementById('debt-subject').value = '';
+                document.getElementById('debt-reason').value = '';
+                document.getElementById('debt-date').value = '';
+            }
+
+            modal.style.display = 'flex';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+            currentEditId = null;
+        }
+
+        // API Functions
+        async function fetchData(url) {
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return await response.json();
+        }
+
+        async function postData(url, data) {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            });
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return await response.json();
+        }
+
+        async function putData(url, data) {
+            const response = await fetch(url, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            });
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return await response.json();
+        }
+
+        async function deleteData(url) {
+            const response = await fetch(url, {
+                method: 'DELETE'
+            });
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return await response.json();
+        }
+
+        // Data loading functions
+        async function loadDashboard() {
+            try {
+                // Load counts
+                const faculties = await fetchData(`${API_BASE_URL}/faculties/`);
+                document.getElementById('faculties-count').textContent = faculties.length;
+
+                const groups = await fetchData(`${API_BASE_URL}/groups/`);
+                document.getElementById('groups-count').textContent = groups.length;
+
+                const students = await fetchData(`${API_BASE_URL}/students/`);
+                document.getElementById('students-count').textContent = students.length;
+
+                const debts = await fetchData(`${API_BASE_URL}/debts/`);
+                const activeDebts = debts.filter(d => d.status === 'active');
+                document.getElementById('active-debts-count').textContent = activeDebts.length;
+
+                // Load recent debts
+                const recentDebts = debts.slice(0, 5);
+                const tbody = document.querySelector('#recent-debts-table tbody');
+                tbody.innerHTML = '';
+
+                for (const debt of recentDebts) {
+                    const student = await fetchData(`${API_BASE_URL}/students/${debt.student_id}`);
+                    const subject = await fetchData(`${API_BASE_URL}/subjects/${debt.subject_id}`);
+
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${debt.id}</td>
+                        <td>${student.last_name} ${student.first_name}</td>
+                        <td>${subject.name}</td>
+                        <td>${debt.date_occurred || '-'}</td>
+                        <td>
+                            <span class="badge ${debt.status === 'active' ? 'badge-active' : 'badge-settled'}">
+                                ${debt.status === 'active' ? 'Активная' : 'Погашена'}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm" onclick="showDebtModal(${debt.id})">Редактировать</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteDebt(${debt.id})">Удалить</button>
+                            ${debt.status === 'active' ?
+                                `<button class="btn btn-sm btn-success" onclick="settleDebt(${debt.id})">Погасить</button>` : ''}
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                }
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+                alert('Ошибка загрузки данных');
+            }
+        }
+
+        async function loadFaculties() {
+            try {
+                const faculties = await fetchData(`${API_BASE_URL}/faculties/`);
+                const tbody = document.querySelector('#faculties-table tbody');
+                tbody.innerHTML = '';
+
+                faculties.forEach(faculty => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${faculty.id}</td>
+                        <td>${faculty.name}</td>
+                        <td>
+                            <button class="btn btn-sm" onclick="showFacultyModal(${faculty.id})">Редактировать</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteFaculty(${faculty.id})">Удалить</button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Error loading faculties:', error);
+                alert('Ошибка загрузки факультетов');
+            }
+        }
+
+        async function loadGroups() {
+            try {
+                const groups = await fetchData(`${API_BASE_URL}/groups/`);
+                const tbody = document.querySelector('#groups-table tbody');
+                tbody.innerHTML = '';
+
+                for (const group of groups) {
+                    const faculty = group.faculty_id ? await fetchData(`${API_BASE_URL}/faculties/${group.faculty_id}`) : {name: 'Не указан'};
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${group.id}</td>
+                        <td>${group.name}</td>
+                        <td>${faculty.name}</td>
+                        <td>
+                            <button class="btn btn-sm" onclick="showGroupModal(${group.id})">Редактировать</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteGroup(${group.id})">Удалить</button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                }
+            } catch (error) {
+                console.error('Error loading groups:', error);
+                alert('Ошибка загрузки групп');
+            }
+        }
+
+        async function loadSubjects() {
+            try {
+                const subjects = await fetchData(`${API_BASE_URL}/subjects/`);
+                const tbody = document.querySelector('#subjects-table tbody');
+                tbody.innerHTML = '';
+
+                for (const subject of subjects) {
+                    const group = subject.group_id ? await fetchData(`${API_BASE_URL}/groups/${subject.group_id}`) : {name: 'Не указана'};
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${subject.id}</td>
+                        <td>${subject.name}</td>
+                        <td>${group.name}</td>
+                        <td>
+                            <button class="btn btn-sm" onclick="showSubjectModal(${subject.id})">Редактировать</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteSubject(${subject.id})">Удалить</button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                }
+            } catch (error) {
+                console.error('Error loading subjects:', error);
+                alert('Ошибка загрузки предметов');
+            }
+        }
+
+        async function loadStudents() {
+            try {
+                const groupFilter = document.getElementById('student-group-filter').value;
+                const url = groupFilter ?
+                    `${API_BASE_URL}/students/?group_id=${groupFilter}` :
+                    `${API_BASE_URL}/students/`;
+
+                const students = await fetchData(url);
+                const tbody = document.querySelector('#students-table tbody');
+                tbody.innerHTML = '';
+
+                for (const student of students) {
+                    const group = student.group_id ? await fetchData(`${API_BASE_URL}/groups/${student.group_id}`) : {name: 'Не указана'};
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${student.id}</td>
+                        <td>${student.last_name} ${student.first_name} ${student.patronymic || ''}</td>
+                        <td>${student.record_book_number}</td>
+                        <td>${group.name}</td>
+                        <td>
+                            <button class="btn btn-sm" onclick="showStudentModal(${student.id})">Редактировать</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteStudent(${student.id})">Удалить</button>
+                            <button class="btn btn-sm btn-warning" onclick="viewStudentDebts(${student.id})">Задолженности</button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                }
+            } catch (error) {
+                console.error('Error loading students:', error);
+                alert('Ошибка загрузки студентов');
+            }
+        }
+
+        async function loadDebts() {
+            try {
+                const statusFilter = document.getElementById('debt-status-filter').value;
+                const groupFilter = document.getElementById('debt-group-filter').value;
+
+                let url = `${API_BASE_URL}/debts/`;
+                if (statusFilter !== 'all') {
+                    url += `?status=${statusFilter}`;
+                }
+
+                const debts = await fetchData(url);
+                const tbody = document.querySelector('#debts-table tbody');
+                tbody.innerHTML = '';
+
+                for (const debt of debts) {
+                    const student = await fetchData(`${API_BASE_URL}/students/${debt.student_id}`);
+                    const subject = await fetchData(`${API_BASE_URL}/subjects/${debt.subject_id}`);
+                    const group = student.group_id ? await fetchData(`${API_BASE_URL}/groups/${student.group_id}`) : {name: 'Не указана'};
+
+                    // Apply group filter if set
+                    if (groupFilter && student.group_id != groupFilter) continue;
+
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${debt.id}</td>
+                        <td>${student.last_name} ${student.first_name} (${group.name})</td>
+                        <td>${subject.name}</td>
+                        <td>${debt.reason || '-'}</td>
+                        <td>${debt.date_occurred || '-'}</td>
+                        <td>
+                            <span class="badge ${debt.status === 'active' ? 'badge-active' : 'badge-settled'}">
+                                ${debt.status === 'active' ? 'Активная' : 'Погашена'}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm" onclick="showDebtModal(${debt.id})">Редактировать</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteDebt(${debt.id})">Удалить</button>
+                            ${debt.status === 'active' ?
+                                `<button class="btn btn-sm btn-success" onclick="settleDebt(${debt.id})">Погасить</button>` : ''}
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                }
+            } catch (error) {
+                console.error('Error loading debts:', error);
+                alert('Ошибка загрузки задолженностей');
+            }
+        }
+
+        async function loadReport() {
+            const reportType = document.getElementById('report-type').value;
+
+            if (reportType === 'by_faculty') {
+                document.getElementById('faculty-report').style.display = 'block';
+                document.getElementById('group-report').style.display = 'none';
+                document.getElementById('student-debts-report').style.display = 'none';
+                document.getElementById('group-select-container').style.display = 'none';
+
+                try {
+                    const report = await fetchData(`${API_BASE_URL}/reports/debts_by_faculty`);
+                    const tbody = document.querySelector('#faculty-report-table tbody');
+                    tbody.innerHTML = '';
+
+                    report.forEach(item => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${item.faculty}</td>
+                            <td>${item.debt_count}</td>
+                            <td>
+                                <button class="btn btn-sm" onclick="viewGroupDebtsByFaculty(${item.id})">Подробнее</button>
+                            </td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                } catch (error) {
+                    console.error('Error loading faculty report:', error);
+                    alert('Ошибка загрузки отчёта по факультетам');
+                }
+            } else if (reportType === 'by_group') {
+                document.getElementById('faculty-report').style.display = 'none';
+                document.getElementById('group-report').style.display = 'block';
+                document.getElementById('student-debts-report').style.display = 'none';
+                document.getElementById('group-select-container').style.display = 'block';
+
+                // Group dropdown will be populated by loadGroupsForDropdowns()
+            }
+        }
+
+        async function loadGroupReport() {
+            const groupId = document.getElementById('report-group').value;
+            if (!groupId) return;
+
+            try {
+                const report = await fetchData(`${API_BASE_URL}/reports/debts_by_group/${groupId}`);
+                const tbody = document.querySelector('#group-report-table tbody');
+                tbody.innerHTML = '';
+
+                report.forEach(item => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${item.student}</td>
+                        <td>${item.debt_count}</td>
+                        <td>
+                            <button class="btn btn-sm" onclick="viewStudentDebts(${item.id})">Подробнее</button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Error loading group report:', error);
+                alert('Ошибка загрузки отчёта по группе');
+            }
+        }
+
+        async function viewGroupDebtsByFaculty(facultyId) {
+            try {
+                const groups = await fetchData(`${API_BASE_URL}/groups/`);
+                const facultyGroups = groups.filter(g => g.faculty_id === facultyId);
+
+                document.getElementById('faculty-report').style.display = 'none';
+                document.getElementById('group-report').style.display = 'block';
+                document.getElementById('student-debts-report').style.display = 'none';
+
+                const tbody = document.querySelector('#group-report-table tbody');
+                tbody.innerHTML = '';
+
+                for (const group of facultyGroups) {
+                    const report = await fetchData(`${API_BASE_URL}/reports/group_debts/${group.id}`);
+
+                    if (report.length > 0) {
+                        const headerRow = document.createElement('tr');
+                        headerRow.innerHTML = `
+                            <td colspan="3" style="background-color: #f5f5f5; font-weight: bold;">
+                                Группа: ${group.name}
+                            </td>
+                        `;
+                        tbody.appendChild(headerRow);
+
+                        report.forEach(item => {
+                            const row = document.createElement('tr');
+                            row.innerHTML = `
+                                <td>${item.student}</td>
+                                <td>${item.subject}</td>
+                                <td>
+                                    <span class="badge ${item.status === 'active' ? 'badge-active' : 'badge-settled'}">
+                                        ${item.status === 'active' ? 'Активная' : 'Погашена'}
+                                    </span>
+                                </td>
+                            `;
+                            tbody.appendChild(row);
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('Error viewing group debts:', error);
+                alert('Ошибка загрузки данных');
+            }
+        }
+
+        async function viewStudentDebts(studentId) {
+            try {
+                const student = await fetchData(`${API_BASE_URL}/students/${studentId}`);
+                const debts = await fetchData(`${API_BASE_URL}/reports/student_debts/${studentId}`);
+
+                document.getElementById('faculty-report').style.display = 'none';
+                document.getElementById('group-report').style.display = 'none';
+                document.getElementById('student-debts-report').style.display = 'block';
+
+                document.querySelector('#student-debts-report .section-title').textContent =
+                    `Задолженности студента: ${student.last_name} ${student.first_name}`;
+
+                const tbody = document.querySelector('#student-debts-table tbody');
+                tbody.innerHTML = '';
+
+                if (debts.length === 0) {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td colspan="4" style="text-align: center;">Нет задолженностей</td>
+                    `;
+                    tbody.appendChild(row);
+                } else {
+                    debts.forEach(debt => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${debt.subject}</td>
+                            <td>${debt.reason || '-'}</td>
+                            <td>${debt.date_occurred || '-'}</td>
+                            <td>
+                                <span class="badge ${debt.status === 'active' ? 'badge-active' : 'badge-settled'}">
+                                    ${debt.status === 'active' ? 'Активная' : 'Погашена'}
+                                </span>
+                            </td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                }
+
+                // Switch to reports section if not already there
+                document.getElementById('dashboard-section').style.display = 'none';
+                document.getElementById('faculties-section').style.display = 'none';
+                document.getElementById('groups-section').style.display = 'none';
+                document.getElementById('subjects-section').style.display = 'none';
+                document.getElementById('students-section').style.display = 'none';
+                document.getElementById('debts-section').style.display = 'none';
+                document.getElementById('reports-section').style.display = 'block';
+
+                // Update active nav item
+                const navItems = document.querySelectorAll('.sidebar-nav a');
+                navItems.forEach(item => item.classList.remove('active'));
+                document.querySelector('.sidebar-nav a[onclick="loadSection(\'reports\')"]').classList.add('active');
+            } catch (error) {
+                console.error('Error viewing student debts:', error);
+                alert('Ошибка загрузки данных');
+            }
+        }
+
+        // Dropdown population functions
+        async function loadFacultiesForDropdowns() {
+            try {
+                const faculties = await fetchData(`${API_BASE_URL}/faculties/`);
+
+                // Group faculty dropdown
+                const groupFacultyDropdown = document.getElementById('group-faculty');
+                groupFacultyDropdown.innerHTML = '<option value="">Выберите факультет</option>';
+                faculties.forEach(faculty => {
+                    const option = document.createElement('option');
+                    option.value = faculty.id;
+                    option.textContent = faculty.name;
+                    groupFacultyDropdown.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading faculties for dropdowns:', error);
+            }
+        }
+
+        async function loadGroupsForDropdowns() {
+            try {
+                const groups = await fetchData(`${API_BASE_URL}/groups/`);
+
+                // Subject group dropdown
+                const subjectGroupDropdown = document.getElementById('subject-group');
+                subjectGroupDropdown.innerHTML = '<option value="">Выберите группу</option>';
+
+                // Student group dropdown
+                const studentGroupDropdown = document.getElementById('student-group');
+                studentGroupDropdown.innerHTML = '<option value="">Выберите группу</option>';
+
+                // Student group filter dropdown
+                const studentGroupFilter = document.getElementById('student-group-filter');
+                studentGroupFilter.innerHTML = '<option value="">Все группы</option>';
+
+                // Debt group filter dropdown
+                const debtGroupFilter = document.getElementById('debt-group-filter');
+                debtGroupFilter.innerHTML = '<option value="">Все группы</option>';
+
+                // Report group dropdown
+                const reportGroupDropdown = document.getElementById('report-group');
+                reportGroupDropdown.innerHTML = '<option value="">Выберите группу</option>';
+
+                for (const group of groups) {
+                    const faculty = group.faculty_id ? await fetchData(`${API_BASE_URL}/faculties/${group.faculty_id}`) : {name: ''};
+                    const optionText = `${group.name}${faculty.name ? ` (${faculty.name})` : ''}`;
+
+                    const option1 = document.createElement('option');
+                    option1.value = group.id;
+                    option1.textContent = optionText;
+                    subjectGroupDropdown.appendChild(option1.cloneNode(true));
+
+                    const option2 = document.createElement('option');
+                    option2.value = group.id;
+                    option2.textContent = optionText;
+                    studentGroupDropdown.appendChild(option2.cloneNode(true));
+
+                    const option3 = document.createElement('option');
+                    option3.value = group.id;
+                    option3.textContent = optionText;
+                    studentGroupFilter.appendChild(option3.cloneNode(true));
+
+                    const option4 = document.createElement('option');
+                    option4.value = group.id;
+                    option4.textContent = optionText;
+                    debtGroupFilter.appendChild(option4.cloneNode(true));
+
+                    const option5 = document.createElement('option');
+                    option5.value = group.id;
+                    option5.textContent = optionText;
+                    reportGroupDropdown.appendChild(option5.cloneNode(true));
+                }
+            } catch (error) {
+                console.error('Error loading groups for dropdowns:', error);
+            }
+        }
+
+        async function loadStudentsForDebtDropdown() {
+            try {
+                const students = await fetchData(`${API_BASE_URL}/students/`);
+                const dropdown = document.getElementById('debt-student');
+                dropdown.innerHTML = '<option value="">Выберите студента</option>';
+
+                for (const student of students) {
+                    const group = student.group_id ? await fetchData(`${API_BASE_URL}/groups/${student.group_id}`) : {name: ''};
+                    const option = document.createElement('option');
+                    option.value = student.id;
+                    option.textContent = `${student.last_name} ${student.first_name}${group.name ? ` (${group.name})` : ''}`;
+                    dropdown.appendChild(option);
+                }
+            } catch (error) {
+                console.error('Error loading students for dropdown:', error);
+            }
+        }
+
+        async function loadSubjectsForDebtDropdown() {
+            try {
+                const subjects = await fetchData(`${API_BASE_URL}/subjects/`);
+                const dropdown = document.getElementById('debt-subject');
+                dropdown.innerHTML = '<option value="">Выберите предмет</option>';
+
+                for (const subject of subjects) {
+                    const group = subject.group_id ? await fetchData(`${API_BASE_URL}/groups/${subject.group_id}`) : {name: ''};
+                    const option = document.createElement('option');
+                    option.value = subject.id;
+                    option.textContent = `${subject.name}${group.name ? ` (${group.name})` : ''}`;
+                    dropdown.appendChild(option);
+                }
+            } catch (error) {
+                console.error('Error loading subjects for dropdown:', error);
+            }
+        }
+
+        // CRUD Operations
+        async function saveFaculty() {
+            const name = document.getElementById('faculty-name').value.trim();
+            if (!name) {
+                alert('Название факультета обязательно');
+                return;
+            }
+
+            try {
+                if (currentEditId) {
+                    await putData(`${API_BASE_URL}/faculties/${currentEditId}`, { name });
+                } else {
+                    await postData(`${API_BASE_URL}/faculties/`, { name });
+                }
+
+                closeModal('faculty-modal');
+                loadFaculties();
+                loadDashboard();
+                loadFacultiesForDropdowns();
+            } catch (error) {
+                console.error('Error saving faculty:', error);
+                alert('Ошибка сохранения факультета');
+            }
+        }
+
+        async function saveGroup() {
+            const name = document.getElementById('group-name').value.trim();
+            const facultyId = document.getElementById('group-faculty').value;
+
+            if (!name || !facultyId) {
+                alert('Название группы и факультет обязательны');
+                return;
+            }
+
+            try {
+                const data = {
+                    name,
+                    faculty_id: parseInt(facultyId)
+                };
+
+                if (currentEditId) {
+                    await putData(`${API_BASE_URL}/groups/${currentEditId}`, data);
+                } else {
+                    await postData(`${API_BASE_URL}/groups/`, data);
+                }
+
+                closeModal('group-modal');
+                loadGroups();
+                loadDashboard();
+                loadGroupsForDropdowns();
+            } catch (error) {
+                console.error('Error saving group:', error);
+                alert('Ошибка сохранения группы');
+            }
+        }
+
+        async function saveSubject() {
+            const name = document.getElementById('subject-name').value.trim();
+            const groupId = document.getElementById('subject-group').value;
+
+            if (!name || !groupId) {
+                alert('Название предмета и группа обязательны');
+                return;
+            }
+
+            try {
+                const data = {
+                    name,
+                    group_id: parseInt(groupId)
+                };
+
+                if (currentEditId) {
+                    await putData(`${API_BASE_URL}/subjects/${currentEditId}`, data);
+                } else {
+                    await postData(`${API_BASE_URL}/subjects/`, data);
+                }
+
+                closeModal('subject-modal');
+                loadSubjects();
+                loadDashboard();
+                loadSubjectsForDebtDropdown();
+            } catch (error) {
+                console.error('Error saving subject:', error);
+                alert('Ошибка сохранения предмета');
+            }
+        }
+
+        async function saveStudent() {
+            const lastName = document.getElementById('student-last-name').value.trim();
+            const firstName = document.getElementById('student-first-name').value.trim();
+            const recordBook = document.getElementById('student-record-book').value.trim();
+            const groupId = document.getElementById('student-group').value;
+
+            if (!lastName || !firstName || !recordBook || !groupId) {
+                alert('Фамилия, имя, номер зачётки и группа обязательны');
+                return;
+            }
+
+            try {
+                const data = {
+                    last_name: lastName,
+                    first_name: firstName,
+                    patronymic: document.getElementById('student-patronymic').value.trim() || null,
+                    record_book_number: recordBook,
+                    group_id: parseInt(groupId),
+                    phone: document.getElementById('student-phone').value.trim() || null,
+                    email: document.getElementById('student-email').value.trim() || null,
+                    date_of_birth: document.getElementById('student-dob').value || null
+                };
+
+                if (currentEditId) {
+                    await putData(`${API_BASE_URL}/students/${currentEditId}`, data);
+                } else {
+                    await postData(`${API_BASE_URL}/students/`, data);
+                }
+
+                closeModal('student-modal');
+                loadStudents();
+                loadDashboard();
+                loadStudentsForDebtDropdown();
+            } catch (error) {
+                console.error('Error saving student:', error);
+                alert('Ошибка сохранения студента');
+            }
+        }
+
+        async function saveDebt() {
+            const studentId = document.getElementById('debt-student').value;
+            const subjectId = document.getElementById('debt-subject').value;
+
+            if (!studentId || !subjectId) {
+                alert('Студент и предмет обязательны');
+                return;
+            }
+
+            try {
+                const data = {
+                    student_id: parseInt(studentId),
+                    subject_id: parseInt(subjectId),
+                    reason: document.getElementById('debt-reason').value.trim() || null,
+                    date_occurred: document.getElementById('debt-date').value || null,
+                    status: 'active'
+                };
+
+                if (currentEditId) {
+                    await putData(`${API_BASE_URL}/debts/${currentEditId}`, data);
+                } else {
+                    await postData(`${API_BASE_URL}/debts/`, data);
+                }
+
+                closeModal('debt-modal');
+                loadDebts();
+                loadDashboard();
+            } catch (error) {
+                console.error('Error saving debt:', error);
+                alert('Ошибка сохранения задолженности');
+            }
+        }
+
+        async function deleteFaculty(id) {
+            if (!confirm('Вы уверены, что хотите удалить этот факультет?')) return;
+
+            try {
+                await deleteData(`${API_BASE_URL}/faculties/${id}`);
+                loadFaculties();
+                loadDashboard();
+                loadFacultiesForDropdowns();
+                loadGroupsForDropdowns();
+            } catch (error) {
+                console.error('Error deleting faculty:', error);
+                alert('Ошибка удаления факультета');
+            }
+        }
+
+        async function deleteGroup(id) {
+            if (!confirm('Вы уверены, что хотите удалить эту группу?')) return;
+
+            try {
+                await deleteData(`${API_BASE_URL}/groups/${id}`);
+                loadGroups();
+                loadDashboard();
+                loadGroupsForDropdowns();
+                loadSubjects();
+                loadStudents();
+                loadDebts();
+            } catch (error) {
+                console.error('Error deleting group:', error);
+                alert('Ошибка удаления группы');
+            }
+        }
+
+        async function deleteSubject(id) {
+            if (!confirm('Вы уверены, что хотите удалить этот предмет?')) return;
+
+            try {
+                await deleteData(`${API_BASE_URL}/subjects/${id}`);
+                loadSubjects();
+                loadDashboard();
+                loadSubjectsForDebtDropdown();
+                loadDebts();
+            } catch (error) {
+                console.error('Error deleting subject:', error);
+                alert('Ошибка удаления предмета');
+            }
+        }
+
+        async function deleteStudent(id) {
+            if (!confirm('Вы уверены, что хотите удалить этого студента?')) return;
+
+            try {
+                await deleteData(`${API_BASE_URL}/students/${id}`);
+                loadStudents();
+                loadDashboard();
+                loadStudentsForDebtDropdown();
+                loadDebts();
+            } catch (error) {
+                console.error('Error deleting student:', error);
+                alert('Ошибка удаления студента');
+            }
+        }
+
+        async function deleteDebt(id) {
+            if (!confirm('Вы уверены, что хотите удалить эту задолженность?')) return;
+
+            try {
+                await deleteData(`${API_BASE_URL}/debts/${id}`);
+                loadDebts();
+                loadDashboard();
+            } catch (error) {
+                console.error('Error deleting debt:', error);
+                alert('Ошибка удаления задолженности');
+            }
+        }
+
+        async function settleDebt(id) {
+            if (!confirm('Пометить задолженность как погашенную?')) return;
+
+            try {
+                await fetch(`${API_BASE_URL}/debts/${id}/settle`, {
+                    method: 'PUT'
+                });
+                loadDebts();
+                loadDashboard();
+            } catch (error) {
+                console.error('Error settling debt:', error);
+                alert('Ошибка погашения задолженности');
+            }
+        }
+
+        // Initialize modals with dropdowns when shown
+        document.getElementById('group-modal').addEventListener('shown', loadFacultiesForDropdowns);
+        document.getElementById('subject-modal').addEventListener('shown', loadGroupsForDropdowns);
+        document.getElementById('student-modal').addEventListener('shown', loadGroupsForDropdowns);
+        document.getElementById('debt-modal').addEventListener('shown', () => {
+            loadStudentsForDebtDropdown();
+            loadSubjectsForDebtDropdown();
+        });
+    </script>
 </body>
+</html>
